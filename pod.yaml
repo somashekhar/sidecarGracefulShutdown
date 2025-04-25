@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: graceful-shutdown-demo
+  labels:
+    app: graceful-shutdown-demo
+spec:
+  terminationGracePeriodSeconds: 60  # Extend default grace period
+  volumes:
+    - name: shared-logs
+      emptyDir: {}
+  containers:
+    - name: main-app
+      image: graceful-shutdown-demo:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8080
+      command: ["/app/main"]
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      lifecycle:
+        preStop:
+          exec:
+            command: ["sh", "-c", "echo 'PreStop hook executed' && sleep 5"]
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /logs
+    - name: sidecar
+      image: graceful-shutdown-demo:latest
+      imagePullPolicy: IfNotPresent
+      command: ["/app/sidecar"]
+      volumeMounts:
+        - name: shared-logs
+          mountPath: /logs

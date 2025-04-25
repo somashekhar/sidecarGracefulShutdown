@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: graceful-shutdown-demo
+spec:
+  selector:
+    app: graceful-shutdown-demo
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP
